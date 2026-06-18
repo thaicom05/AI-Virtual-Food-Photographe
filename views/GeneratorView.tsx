@@ -20,9 +20,17 @@ const GeneratorView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<HistoryItem | null>(null);
   
+  const parseAndGetFriendlyError = (err: unknown, defaultKey: string): string => {
+    const errString = typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
+    if (errString.includes('429') || errString.includes('RESOURCE_EXHAUSTED') || errString.toLowerCase().includes('quota')) {
+      return 'API Quota Exceeded (429): The default shared API key has temporarily run out of quota due to high volume. Please wait a moment, or click the settings gear (API: Default) in the top header to enter your own free Gemini API key to continue.';
+    }
+    return t(defaultKey);
+  };
+
   const handleError = (err: unknown) => {
     console.error(err);
-    setError(t('error.generationFailed'));
+    setError(parseAndGetFriendlyError(err, 'error.generationFailed'));
   };
 
   const handleGenerateMenu = async (menuText: string, style: ImageStyle) => {
@@ -94,7 +102,7 @@ const GeneratorView: React.FC = () => {
 
     } catch (err) {
        console.error(err);
-       setError(t('error.editFailed'));
+       setError(parseAndGetFriendlyError(err, 'error.editFailed'));
     } finally {
       setIsLoading(false);
       setLoadingMessage('');

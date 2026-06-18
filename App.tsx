@@ -7,6 +7,7 @@ import GeneratorView from './views/GeneratorView';
 import HistoryView from './views/HistoryView';
 import MenuBuilderView from './views/MenuBuilderView';
 import { CameraIcon } from './components/Icons';
+import ApiKeySelector from './components/ApiKeySelector';
 
 const App: React.FC = () => {
   const { t, locale, setLocale } = useLocalization();
@@ -39,12 +40,15 @@ const App: React.FC = () => {
                     {t('header.title')}
                 </h1>
             </div>
-            <button
-                onClick={toggleLocale}
-                className="bg-gray-800/50 border border-gray-700 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-            >
-                {t('langToggle')}
-            </button>
+            <div className="flex items-center gap-2">
+                <ApiKeySelector />
+                <button
+                    onClick={toggleLocale}
+                    className="bg-gray-800/50 border border-gray-700 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                >
+                    {t('langToggle')}
+                </button>
+            </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
             {renderView()}

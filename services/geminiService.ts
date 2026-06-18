@@ -3,11 +3,14 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { ImageStyle, HistoryItem, ProgressUpdate } from '../types';
 import { saveImage } from "./indexedDBService";
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getApiClient = (): GoogleGenAI => {
+    const customKey = typeof window !== 'undefined' ? window.localStorage.getItem('custom_gemini_api_key') : null;
+    const apiKey = customKey || process.env.API_KEY;
+    if (!apiKey) {
+        throw new Error("Gemini API key is not configured. Please supply a custom API key using the Settings gear in the header bar.");
+    }
+    return new GoogleGenAI({ apiKey });
+};
 
 const getStyleLogicPrompt = (style: ImageStyle): string => {
     switch (style) {
@@ -46,7 +49,7 @@ export const generateMenuItems = async (
       ${menuText}
     `;
 
-    const textModelResponse = await ai.models.generateContent({
+    const textModelResponse = await getApiClient().models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: userPrompt,
         config: {
@@ -93,7 +96,7 @@ export const generateMenuItems = async (
           variables: { name: item.name, current: i + 1, total: parsedItems.length },
         });
         
-        const imageResponse = await ai.models.generateContent({
+        const imageResponse = await getApiClient().models.generateContent({
             model: 'gemini-2.5-flash-image',
             contents: {
                 parts: [{ text: item.imagePrompt }],
@@ -139,7 +142,7 @@ export const editMenuItemImage = async (
     const mimeType = base64ImageData.substring(base64ImageData.indexOf(":") + 1, base64ImageData.indexOf(";"));
     const data = base64ImageData.substring(base64ImageData.indexOf(",") + 1);
 
-    const imageResponse = await ai.models.generateContent({
+    const imageResponse = await getApiClient().models.generateContent({
         model: 'gemini-2.5-flash-image',
         contents: {
             parts: [
